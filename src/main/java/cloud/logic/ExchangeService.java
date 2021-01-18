@@ -1,5 +1,19 @@
 package cloud.logic;
 
+import cloud.boundaries.ExchangeBoundary;
+
 public interface ExchangeService {
+
+	public ExchangeBoundary[] getAll(int page, int size);
+
+	public ExchangeBoundary getBidById(String bid, int page, int size);
+
+	public ExchangeBoundary create(ExchangeBoundary boundary);
+
+	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue);
+
+	public void update(ExchangeBoundary boundary);
+
+	public void removeAll();
 
 }
