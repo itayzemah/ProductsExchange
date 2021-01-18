@@ -6,7 +6,7 @@ public interface ExchangeService {
 
 	public ExchangeBoundary[] getAll(int page, int size);
 
-	public ExchangeBoundary getBidById(String bid, int page, int size);
+	public ExchangeBoundary getBidById(String bid);
 
 	public ExchangeBoundary create(ExchangeBoundary boundary);
 

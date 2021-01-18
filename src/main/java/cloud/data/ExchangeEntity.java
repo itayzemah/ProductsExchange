@@ -28,5 +28,5 @@ public class ExchangeEntity {
 	private @NonNull Date timestamp;
 	private @NonNull String oldProductId;
 	private @NonNull String newProductId;
-	private @NonNull ExtraEntity extra;
+	private ExtraEntity extra;
 }

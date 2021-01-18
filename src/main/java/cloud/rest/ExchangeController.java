@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import cloud.boundaries.ExchangeBoundary;
+import cloud.data.exceptions.BidNotFoundException;
 import cloud.data.exceptions.ProductNotFoundException;
 import cloud.logic.ExchangeService;
 import lombok.AllArgsConstructor;
@@ -58,11 +59,9 @@ public class ExchangeController {
 
 	@RequestMapping(path="/{bid}", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
 	public ExchangeBoundary getById(
-			@PathVariable String bid,
-			@RequestParam(name = "page", required = false, defaultValue = "0") int page,
-			@RequestParam(name = "size", required = false, defaultValue = "1000") int size) {
+			@PathVariable String bid)
 		
-		return this.exchangeService.getBidById(bid,page,size);
+		return this.exchangeService.getBidById(bid);
 	}
 
 	@RequestMapping(path="/find/by", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
@@ -78,6 +77,15 @@ public class ExchangeController {
 	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.NOT_FOUND)
 	public Map<String, String> handleException(ProductNotFoundException e) {
+		String error = e.getMessage();
+		if (error == null) {
+			error = "Not found";
+		}
+		return Collections.singletonMap("error", error);
+	}
+	@ExceptionHandler
+	@ResponseStatus(code = HttpStatus.NOT_FOUND)
+	public Map<String, String> handleException(BidNotFoundException e) {
 		String error = e.getMessage();
 		if (error == null) {
 			error = "Not found";

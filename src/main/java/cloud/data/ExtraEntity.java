@@ -1,5 +1,7 @@
 package cloud.data;
 
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,5 +17,5 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class ExtraEntity {
 	private double money;
-	private String message;
+	private Map<String, String> moreInfo;
 }
