@@ -21,9 +21,9 @@ import cloud.data.exceptions.ProductNotFoundException;
 import cloud.logic.ExchangeService;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 @RestController
 @RequestMapping(path="exchange")
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ExchangeController {
 	
 	private ExchangeService exchangeService;
@@ -59,7 +59,7 @@ public class ExchangeController {
 
 	@RequestMapping(path="/{bid}", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
 	public ExchangeBoundary getById(
-			@PathVariable String bid)
+			@PathVariable String bid) {
 		
 		return this.exchangeService.getBidById(bid);
 	}
