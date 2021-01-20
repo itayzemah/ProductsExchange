@@ -36,9 +36,11 @@ public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
 	public ExchangeBoundary setProduct(ExchangeBoundary bid) {
 		ExchangeBoundary rv = bid;
 		ProductBoundary newProduct = restTemplate.getForEntity(fullURL+"/" +rv.getNewProduct().getId(), ProductBoundary.class).getBody();
+		// TODO check if product exist
 		rv.setNewProduct(newProduct);
 		
 		ProductBoundary oldProduct = restTemplate.getForEntity(fullURL+"/" +rv.getOldProduct().getId(), ProductBoundary.class).getBody();
+		// TODO check if product exist
 		rv.setNewProduct(oldProduct);
 		
 		return rv;
@@ -48,6 +50,12 @@ public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
 	public void run(String... args) throws Exception {
 		System.err.println(this.url + this.port);
 		System.err.println(this.fullURL);
+	}
+
+	@Override
+	public ProductBoundary createProduct(ProductBoundary product) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

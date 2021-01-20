@@ -16,9 +16,9 @@ import lombok.ToString;
 @ToString
 public class ProductBoundary {
 	private @NonNull String id;
-	private @NonNull String name;
+	private String name;
 	private double price;
-	private @NonNull String image;
+	private String image;
 	private Map<String, Object> productDetails;
-	private @NonNull CategoryBoundary category;
+	private CategoryBoundary category;
 }

@@ -43,8 +43,9 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
-	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue) {
+	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue,int page, int size) {
 		// TODO Auto-generated method stub
+		this.exchangeDAL.findAllByUserEmail(value, PageRequest.of(page, size));
 		return null;
 	}
 
