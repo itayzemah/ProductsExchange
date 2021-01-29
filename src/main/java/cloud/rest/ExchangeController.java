@@ -21,9 +21,9 @@ import cloud.data.exceptions.ProductNotFoundException;
 import cloud.logic.ExchangeService;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 @RestController
 @RequestMapping(path="exchange")
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ExchangeController {
 	
 	private ExchangeService exchangeService;
@@ -69,9 +69,11 @@ public class ExchangeController {
 			@RequestParam(name = "search", required = true) String search,
 			@RequestParam(name = "value", required = false) String value,
 			@RequestParam(name = "minValue", required = false) String minValue,
-			@RequestParam(name = "maxValue", required = false) String maxValue) {
+			@RequestParam(name = "maxValue", required = false) String maxValue,
+			@RequestParam(name = "page", required = false, defaultValue = "0") int page,
+			@RequestParam(name = "size", required = false, defaultValue = "1000") int size) {
 		
-		return this.exchangeService.searchBy(search,value,minValue,maxValue);
+		return this.exchangeService.searchBy(search,value,minValue,maxValue,page,size);
 	}
 	
 	@ExceptionHandler

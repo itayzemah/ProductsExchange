@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 
 import cloud.data.ExtraEntity;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -16,8 +17,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
 public class ExchangeBoundary {
+	
 	private @Id String bidId;
 	private @NonNull String userEmail;
 	private @NonNull Date timestamp;

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import cloud.boundaries.ExchangeBoundary;
 import cloud.data.ExchangeConverted;
@@ -15,35 +16,48 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ExchangeServiceImplementation implements ExchangeService {
-
+	private ProductConsumer productConsumer;
 	private ExchangeDataAccessRepository exchangeDAL;
 	private ExchangeConverted converter;
 
 	@Override
+	@Transactional(readOnly = true)
 	public ExchangeBoundary[] getAll(int page, int size) {
-		return exchangeDAL.findAll(PageRequest.of(page, size)).stream().map(converter::toBoundary)
+		return exchangeDAL.findAll(PageRequest.of(page, size))
+				.stream()
+				.map(converter::toBoundary)
+				.map(productConsumer::setProduct)
 				.collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ExchangeBoundary getBidById(String bid) {
-		return this.converter.toBoundary(exchangeDAL.findById(bid)
+		ExchangeBoundary withoutProductDetails =  this.converter.toBoundary(exchangeDAL.findById(bid)
 				.orElseThrow(() -> new BidNotFoundException("A bid with id: " + bid + " not found")));
+		ExchangeBoundary withProduct = this.productConsumer.setProduct(withoutProductDetails);
+		return withProduct;
 	}
 
 	@Override
+	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
 		// TODO Auto-generated method stub
+		
+		
 		return null;
 	}
 
 	@Override
-	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue) {
+	@Transactional(readOnly = true)
+	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue,int page, int size) {
 		// TODO Auto-generated method stub
+		this.exchangeDAL.findAllByUserEmail(value, PageRequest.of(page, size));
 		return null;
 	}
 
 	@Override
+	@Transactional
 	public void update(ExchangeBoundary boundary) {
 		if (this.exchangeDAL.existsById(boundary.getBidId())) {
 			this.exchangeDAL.save(this.converter.fromBoundary(boundary));
@@ -54,6 +68,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
+	@Transactional
 	public void removeAll() {
 		this.exchangeDAL.deleteAll();
 

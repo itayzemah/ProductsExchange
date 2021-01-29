@@ -10,7 +10,7 @@ public interface ExchangeService {
 
 	public ExchangeBoundary create(ExchangeBoundary boundary);
 
-	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue);
+	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue,int page, int size);
 
 	public void update(ExchangeBoundary boundary);
 

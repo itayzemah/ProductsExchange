@@ -2,6 +2,7 @@ package cloud.data;
 
 import java.util.Date;
 
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,7 +24,8 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class ExchangeEntity {
-	private @Id String bidId;
+    
+    private @Id String bidId;
 	private @NonNull String userEmail;
 	private @NonNull Date timestamp;
 	private @NonNull String oldProductId;
