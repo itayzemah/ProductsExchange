@@ -10,6 +10,7 @@ import cloud.boundaries.ExchangeBoundary;
 import cloud.data.ExchangeConverted;
 import cloud.data.dal.ExchangeDataAccessRepository;
 import cloud.data.exceptions.BidNotFoundException;
+import cloud.data.exceptions.InvalidDataException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -38,15 +39,58 @@ public class ExchangeServiceImplementation implements ExchangeService {
 
 	@Override
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
-		// TODO Auto-generated method stub
+		if(boundary.getOldProduct().getId() == null || boundary.getOldProduct().getId().isEmpty() 
+				|| boundary.getNewProduct().getId() == null || boundary.getNewProduct().getId().isEmpty()) {
+			throw new InvalidDataException("Invalid value for product id");
+		}
+		
 		return null;
 	}
-
+	
 	@Override
-	public ExchangeBoundary searchBy(String search, String value, String minValue, String maxValue,int page, int size) {
-		// TODO Auto-generated method stub
-		this.exchangeDAL.findAllByUserEmail(value, PageRequest.of(page, size));
-		return null;
+	public ExchangeBoundary[] searchBy(String search, String value, String minValue, String maxValue,int page, int size) {
+		if(value == null || value.isEmpty()) {
+			throw new InvalidDataException("Invalid value to search for");
+		}
+		switch(search) {
+		case "user":
+			return this.searchByUser(value, page, size);
+		case "oldProductId":
+			return this.searchByOldProductId(value, page, size);
+		case "newProductId":
+			return this.searchByNewProductId(value, page, size);
+		case "extraMoney":
+			return this.searchByExtraMoney(minValue, maxValue, page, size);
+		default:
+			throw new InvalidDataException("Invalid value to search by");
+		}
+	}
+	
+	private ExchangeBoundary[] searchByUser(String value, int page, int size) {
+		return this.exchangeDAL.findAllByUserEmail(value, PageRequest.of(page, size)).stream()
+				.map(this.converter::toBoundary).collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
+	}
+	
+	private ExchangeBoundary[] searchByOldProductId(String value, int page, int size) {
+		return this.exchangeDAL.findAllByOldProductId(value, PageRequest.of(page, size)).stream()
+				.map(this.converter::toBoundary).collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
+	}
+	
+	private ExchangeBoundary[] searchByNewProductId(String value, int page, int size) {
+		return this.exchangeDAL.findAllByNewProductId(value, PageRequest.of(page, size)).stream()
+				.map(this.converter::toBoundary).collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
+	}
+	
+	private ExchangeBoundary[] searchByExtraMoney(String minValue, String maxValue, int page, int size) {
+		double minValueAsDouble, maxValueAsDouble;
+		try {
+			minValueAsDouble = Double.parseDouble(minValue);
+			maxValueAsDouble = Double.parseDouble(maxValue);
+		} catch (NumberFormatException e) {
+			throw new InvalidDataException("Invalid money format");
+		}
+		return this.exchangeDAL.findAllByExtra_MoneyBetween(minValueAsDouble, maxValueAsDouble, PageRequest.of(page, size))
+				.stream().map(this.converter::toBoundary).collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	@Override
@@ -56,13 +100,10 @@ public class ExchangeServiceImplementation implements ExchangeService {
 		} else {
 			throw new BidNotFoundException("A bid with id: " + boundary.getBidId() + " not found");
 		}
-
 	}
 
 	@Override
 	public void removeAll() {
 		this.exchangeDAL.deleteAll();
-
 	}
-
 }

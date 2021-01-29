@@ -10,4 +10,10 @@ import cloud.data.ExchangeEntity;
 public interface ExchangeDataAccessRepository extends MongoRepository<ExchangeEntity, String>{
 
 	public List<ExchangeEntity> findAllByUserEmail(String userEmail, Pageable pageReq);
+	
+	public List<ExchangeEntity> findAllByOldProductId(String id, Pageable pageReq);
+	
+	public List<ExchangeEntity> findAllByNewProductId(String id, Pageable pageReq);
+	
+	public List<ExchangeEntity> findAllByExtra_MoneyBetween(Double minValue, Double maxValue, Pageable pageReq);
 }
