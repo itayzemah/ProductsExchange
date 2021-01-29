@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import cloud.boundaries.ExchangeBoundary;
 import cloud.data.ExchangeConverted;
+import cloud.data.ExchangeEntity;
 import cloud.data.dal.ExchangeDataAccessRepository;
 import cloud.data.exceptions.BidNotFoundException;
 import cloud.data.exceptions.InvalidDataException;
+import cloud.data.exceptions.ProductNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -43,11 +45,20 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	@Override
 	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
+		if(this.exchangeDAL.existsById(boundary.getBidId())) {
+			throw new InvalidDataException("An exchange with this id already exists");
+		}
 		if(boundary.getOldProduct().getId() == null || boundary.getOldProduct().getId().isEmpty() 
 				|| boundary.getNewProduct().getId() == null || boundary.getNewProduct().getId().isEmpty()) {
 			throw new InvalidDataException("Invalid value for product id");
 		}
-		return null;
+		//consider moving this block inside setProduct function in the consumer
+		if(!productConsumer.isProductExist(boundary.getOldProduct().getId()) || 
+				!productConsumer.isProductExist(boundary.getNewProduct().getId())) {
+			throw new ProductNotFoundException("One or both products don't exist");
+		}	
+		ExchangeEntity entity = this.converter.fromBoundary(this.productConsumer.setProduct(boundary));
+		return this.converter.toBoundary(this.exchangeDAL.save(entity));
 	}
 	
 	@Override
