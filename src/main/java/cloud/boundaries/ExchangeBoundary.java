@@ -1,10 +1,12 @@
 package cloud.boundaries;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 
-import cloud.data.ExtraEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,4 +29,17 @@ public class ExchangeBoundary {
 	private @NonNull ProductBoundary oldProduct;
 	private @NonNull ProductBoundary newProduct;
 	private ExtraBoundary extra;
+	
+	
+	public boolean doesProductHaveOnlyId(ProductBoundary product) {
+		ObjectMapper jackson = new ObjectMapper();
+		Map<String, Object> productAsMap = jackson.convertValue(product, Map.class);
+		return productAsMap.containsKey("id") && productAsMap.size() == 1;	
+	}
+	
+	public boolean doesProductHaveDetailsAndHaventId(ProductBoundary product) {
+		ObjectMapper jackson = new ObjectMapper();
+		Map<String, Object> productAsMap = jackson.convertValue(product, Map.class);
+		return !productAsMap.containsKey("id") && productAsMap.size() >= 1;
+	}
 }

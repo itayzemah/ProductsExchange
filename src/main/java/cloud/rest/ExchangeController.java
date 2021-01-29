@@ -65,7 +65,7 @@ public class ExchangeController {
 	}
 
 	@RequestMapping(path="/find/by", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
-	public ExchangeBoundary searchBy(
+	public ExchangeBoundary[] searchBy(
 			@RequestParam(name = "search", required = true) String search,
 			@RequestParam(name = "value", required = false) String value,
 			@RequestParam(name = "minValue", required = false) String minValue,
