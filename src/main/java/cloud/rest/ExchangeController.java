@@ -59,7 +59,7 @@ public class ExchangeController {
 
 	@RequestMapping(path="/{bid}", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
 	public ExchangeBoundary getById(
-			@PathVariable String bid)
+			@PathVariable String bid) {
 		
 		return this.exchangeService.getBidById(bid);
 	}
