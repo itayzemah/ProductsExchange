@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import cloud.boundaries.ExchangeBoundary;
 import cloud.data.ExchangeConverted;
@@ -21,6 +22,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	private ExchangeConverted converter;
 
 	@Override
+	@Transactional(readOnly = true)
 	public ExchangeBoundary[] getAll(int page, int size) {
 		return exchangeDAL.findAll(PageRequest.of(page, size))
 				.stream()
@@ -30,6 +32,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ExchangeBoundary getBidById(String bid) {
 		ExchangeBoundary withoutProductDetails =  this.converter.toBoundary(exchangeDAL.findById(bid)
 				.orElseThrow(() -> new BidNotFoundException("A bid with id: " + bid + " not found")));
@@ -38,16 +41,17 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
+	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
 		if(boundary.getOldProduct().getId() == null || boundary.getOldProduct().getId().isEmpty() 
 				|| boundary.getNewProduct().getId() == null || boundary.getNewProduct().getId().isEmpty()) {
 			throw new InvalidDataException("Invalid value for product id");
 		}
-		
 		return null;
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public ExchangeBoundary[] searchBy(String search, String value, String minValue, String maxValue,int page, int size) {
 		if(value == null || value.isEmpty()) {
 			throw new InvalidDataException("Invalid value to search for");
@@ -94,6 +98,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
+	@Transactional
 	public void update(ExchangeBoundary boundary) {
 		if (this.exchangeDAL.existsById(boundary.getBidId())) {
 			this.exchangeDAL.save(this.converter.fromBoundary(boundary));
@@ -103,6 +108,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	}
 
 	@Override
+	@Transactional
 	public void removeAll() {
 		this.exchangeDAL.deleteAll();
 	}

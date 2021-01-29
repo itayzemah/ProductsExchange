@@ -53,9 +53,8 @@ public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
 	}
 
 	@Override
-	public ProductBoundary createProduct(ProductBoundary product) {
+	public boolean isProductExist(String productId) {
 		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
-
 }
