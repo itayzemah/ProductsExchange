@@ -1,11 +1,8 @@
 package cloud.boundaries;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.springframework.data.annotation.Id;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,16 +27,4 @@ public class ExchangeBoundary {
 	private @NonNull ProductBoundary newProduct;
 	private ExtraBoundary extra;
 	
-	
-	public boolean doesProductHaveOnlyId(ProductBoundary product) {
-		ObjectMapper jackson = new ObjectMapper();
-		Map<String, Object> productAsMap = jackson.convertValue(product, Map.class);
-		return productAsMap.containsKey("id") && productAsMap.size() == 1;	
-	}
-	
-	public boolean doesProductHaveDetailsAndHaventId(ProductBoundary product) {
-		ObjectMapper jackson = new ObjectMapper();
-		Map<String, Object> productAsMap = jackson.convertValue(product, Map.class);
-		return !productAsMap.containsKey("id") && productAsMap.size() >= 1;
-	}
 }
