@@ -40,8 +40,7 @@ public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
 		rv.setNewProduct(newProduct);
 		
 		ProductBoundary oldProduct = restTemplate.getForEntity(fullURL+"/" +rv.getOldProduct().getId(), ProductBoundary.class).getBody();
-		rv.setNewProduct(oldProduct);
-		
+		rv.setOldProduct(oldProduct);
 		return rv;
 	}
 
