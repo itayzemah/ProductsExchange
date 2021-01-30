@@ -1,9 +1,10 @@
 package cloud.logic;
 
 import cloud.boundaries.ExchangeBoundary;
+import cloud.boundaries.ProductBoundary;
 
 public interface ProductConsumer {
 
-	public ExchangeBoundary setProduct(ExchangeBoundary bid);
-	public boolean isProductExist(String productId);
+	public ExchangeBoundary setProducts(ExchangeBoundary bid);
+	public ProductBoundary getProductFromCatalog(String productId);
 }

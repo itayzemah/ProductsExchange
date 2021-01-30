@@ -85,6 +85,7 @@ public class ExchangeController {
 		}
 		return Collections.singletonMap("error", error);
 	}
+	
 	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.NOT_FOUND)
 	public Map<String, String> handleException(BidNotFoundException e) {

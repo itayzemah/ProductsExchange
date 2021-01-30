@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import cloud.boundaries.ExchangeBoundary;
 import cloud.boundaries.ProductBoundary;
+import cloud.data.exceptions.ProductNotFoundException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
+public class ProductConsumerImple implements ProductConsumer{
 	private RestTemplate restTemplate;
 
 	@Value( "${producer.url}" )
@@ -33,31 +34,24 @@ public class ProductConsumerImple implements ProductConsumer, CommandLineRunner{
 	}
 	
 	@Override
-	public ExchangeBoundary setProduct(ExchangeBoundary bid) {
+	public ExchangeBoundary setProducts(ExchangeBoundary bid) {
 		ExchangeBoundary rv = bid;
 		
-		ProductBoundary newProduct = restTemplate.getForEntity(fullURL+"/" +rv.getNewProduct().getId(), ProductBoundary.class).getBody();
+		ProductBoundary newProduct = getProductFromCatalog(bid.getNewProduct().getId());
 		rv.setNewProduct(newProduct);
 		
-		ProductBoundary oldProduct = restTemplate.getForEntity(fullURL+"/" +rv.getOldProduct().getId(), ProductBoundary.class).getBody();
+		ProductBoundary oldProduct = getProductFromCatalog(bid.getOldProduct().getId());
 		rv.setOldProduct(oldProduct);
 		return rv;
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-	//	System.err.println(this.url + this.port);
-	//	System.err.println(this.fullURL);
-	}
-
-	@Override
-	public boolean isProductExist(String productId) {
+	public ProductBoundary getProductFromCatalog(String productId) {
 		try{
-			restTemplate.getForEntity(fullURL+"/" + productId, ProductBoundary.class).getBody();
+			return restTemplate.getForEntity(fullURL+"/" + productId, ProductBoundary.class).getBody();
 		}
 		catch (Exception e) {
-			return false;
+			throw new ProductNotFoundException("Product " + productId + " not found");
 		}
-		return true;
 	}
 }
