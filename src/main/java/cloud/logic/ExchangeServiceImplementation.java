@@ -11,11 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import cloud.boundaries.ExchangeBoundary;
 import cloud.boundaries.ProductBoundary;
 import cloud.data.ExchangeConverted;
-import cloud.data.ExchangeEntity;
 import cloud.data.dal.ExchangeDataAccessRepository;
 import cloud.data.exceptions.BidNotFoundException;
 import cloud.data.exceptions.InvalidDataException;
-import cloud.data.exceptions.ProductNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
