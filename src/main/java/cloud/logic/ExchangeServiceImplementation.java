@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import cloud.boundaries.ExchangeBoundary;
 import cloud.boundaries.ProductBoundary;
 import cloud.data.ExchangeConverted;
+import cloud.data.ExchangeEntity;
 import cloud.data.dal.ExchangeDataAccessRepository;
 import cloud.data.exceptions.BidNotFoundException;
 import cloud.data.exceptions.InvalidDataException;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 public class ExchangeServiceImplementation implements ExchangeService {
 	private ProductConsumer productConsumer;
 	private ExchangeDataAccessRepository exchangeDAL;
+	private InputValidatorService inputValidator;
 	private ExchangeConverted converter;
 
 	@Override
@@ -42,15 +44,18 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	@Override
 	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
-//		if (isNullOrEmpty(boundary.getOldProduct().getId()) || isNullOrEmpty(boundary.getNewProduct().getId())) {
-//			throw new InvalidDataException("Invalid value for product id");
-//		}
+		if(!inputValidator.IsValidEmail(boundary.getUserEmail())) {
+			throw new InvalidDataException("Email address isn't valid");
+		}
+		if(!inputValidator.areValidProducts(boundary)) {
+			throw new InvalidDataException("Invalid values for the products.");
+		}
 		boundary.setBidId(null);
 		boundary.setTimestamp(new Date());
 
 		ProductBoundary oldProduct = productConsumer.getProductFromCatalog(boundary.getOldProduct().getId());
 		ProductBoundary newProduct = productConsumer.getProductFromCatalog(boundary.getNewProduct().getId());
-		ExchangeBoundary rv = this.converter.toBoundary(this.exchangeDAL.save(this.converter.fromBoundary(boundary)));
+		ExchangeBoundary rv = this.converter.toBoundary(this.exchangeDAL.save(this.converter.fromBoundary(boundary, null)));
 
 		rv.setNewProduct(newProduct);
 		rv.setOldProduct(oldProduct);
@@ -114,11 +119,11 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	@Override
 	@Transactional
 	public void update(ExchangeBoundary boundary) {
-		if (this.exchangeDAL.existsById(boundary.getBidId())) {
-			this.exchangeDAL.save(this.converter.fromBoundary(boundary));
-		} else {
-			throw new BidNotFoundException("A bid with id: " + boundary.getBidId() + " not found");
-		}
+		checkEmailIfItExists(boundary.getUserEmail());
+		checkProductsIfTheyExist(boundary);
+		ExchangeEntity existExchangeEntity = this.exchangeDAL.findById(boundary.getBidId())
+				.orElseThrow(() -> new BidNotFoundException("A bid with id: " + boundary.getBidId() + " not found"));
+		this.exchangeDAL.save(this.converter.fromBoundary(boundary, existExchangeEntity));
 	}
 
 	@Override
@@ -126,8 +131,25 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	public void removeAll() {
 		this.exchangeDAL.deleteAll();
 	}
-
-	private boolean isNullOrEmpty(String string) {
-		return string == null || string.trim().isEmpty();
+	
+	private void checkProductsIfTheyExist(ExchangeBoundary boundary) {
+		if(boundary.getOldProduct() != null) {
+			if(inputValidator.isNullOrEmpty(boundary.getOldProduct().getId())){
+				throw new InvalidDataException("Invalid id for the product");
+			}
+		}
+		if(boundary.getNewProduct() != null) {
+			if(inputValidator.isNullOrEmpty(boundary.getNewProduct().getId())) {
+				throw new InvalidDataException("Invalid id for the product");
+			}
+		}
+	}
+	
+	private void checkEmailIfItExists(String email) {
+		if(email != null) {
+			if(!inputValidator.IsValidEmail(email)) {
+				throw new InvalidDataException("Email address isn't valid");
+			}
+		}
 	}
 }

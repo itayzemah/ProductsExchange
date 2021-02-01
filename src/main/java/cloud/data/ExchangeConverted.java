@@ -43,23 +43,33 @@ public class ExchangeConverted {
 	//*************************************************************************
 	//					fromBoundary
 	//*************************************************************************
-	public ExchangeEntity fromBoundary(ExchangeBoundary boundary) {   
-		ExchangeEntity rv = new ExchangeEntity();   
+	public ExchangeEntity fromBoundary(ExchangeBoundary boundary, ExchangeEntity existEntity) {   
+		ExchangeEntity rv = existEntity != null ? existEntity : new ExchangeEntity();   
 		rv.setBidId(boundary.getBidId());     
 		if(boundary.getExtra() != null) {   
 			rv.setExtra(this.fromBoundary(boundary.getExtra()));  
-		} 
-		rv.setOldProductId(boundary.getOldProduct().getId()); 
-		rv.setNewProductId(boundary.getNewProduct().getId());
-		rv.setTimestamp(boundary.getTimestamp());
-		rv.setUserEmail(boundary.getUserEmail());
+		}
+		if(boundary.getOldProduct() != null && boundary.getOldProduct().getId() != null) {
+			rv.setOldProductId(boundary.getOldProduct().getId()); 
+		}
+		if(boundary.getNewProduct() != null && boundary.getNewProduct().getId() != null) {
+			rv.setNewProductId(boundary.getNewProduct().getId());
+		}
+		if(boundary.getTimestamp() != null) {
+			rv.setTimestamp(boundary.getTimestamp());
+		}
+		if(boundary.getUserEmail() != null) {
+			rv.setUserEmail(boundary.getUserEmail());	
+		}
 		return rv; 
 	} 
 	
 	private @NonNull ExtraEntity fromBoundary(@NonNull ExtraBoundary boundary) {
 		ExtraEntity rv = new ExtraEntity();
 		rv.setMoney(boundary.getMoney());
-		rv.setMoreInfo(boundary.getMoreInfo());
+		if(boundary.getMoreInfo() != null) {
+			rv.setMoreInfo(boundary.getMoreInfo());
+		}
 		return rv;
 	}
 }
