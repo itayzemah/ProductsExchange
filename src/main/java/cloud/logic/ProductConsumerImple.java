@@ -29,7 +29,7 @@ public class ProductConsumerImple implements ProductConsumer{
 	@PostConstruct
 	public void init() {
 		this.restTemplate = new RestTemplate();
-		fullURL = url+':' +port+"/shopping/products";
+		fullURL = url + ':' + port + "/shopping/products";
 	}
 	
 	@Override

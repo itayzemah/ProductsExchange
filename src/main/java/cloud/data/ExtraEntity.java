@@ -17,5 +17,6 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class ExtraEntity {
 	private double money;
+	private String coupon;
 	private Map<String, String> moreInfo;
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cloud.boundaries.CouponBoundary;
 import cloud.boundaries.ExchangeBoundary;
 import cloud.boundaries.ProductBoundary;
 import cloud.data.ExchangeConverted;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ExchangeServiceImplementation implements ExchangeService {
 	private ProductConsumer productConsumer;
+	private CouponConsumer couponConsumer;
 	private ExchangeDataAccessRepository exchangeDAL;
 	private InputValidatorService inputValidator;
 	private ExchangeConverted converter;
@@ -29,7 +31,8 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	@Transactional(readOnly = true)
 	public ExchangeBoundary[] getAll(int page, int size) {
 		return exchangeDAL.findAll(PageRequest.of(page, size)).stream().map(converter::toBoundary)
-				.map(productConsumer::setProducts).collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
+				.map(productConsumer::setProducts).map(couponConsumer::setCoupon).collect(Collectors.toList())
+				.toArray(new ExchangeBoundary[0]);
 	}
 
 	@Override
@@ -38,16 +41,17 @@ public class ExchangeServiceImplementation implements ExchangeService {
 		ExchangeBoundary withoutProductDetails = this.converter.toBoundary(exchangeDAL.findById(bid)
 				.orElseThrow(() -> new BidNotFoundException("A bid with id: " + bid + " not found")));
 		ExchangeBoundary withProduct = this.productConsumer.setProducts(withoutProductDetails);
-		return withProduct;
+		ExchangeBoundary withCoupon = this.couponConsumer.setCoupon(withProduct);
+		return withCoupon;
 	}
 
 	@Override
 	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
-		if(!inputValidator.IsValidEmail(boundary.getUserEmail())) {
+		if (!inputValidator.IsValidEmail(boundary.getUserEmail())) {
 			throw new InvalidDataException("Email address isn't valid");
 		}
-		if(!inputValidator.areValidProducts(boundary)) {
+		if (!inputValidator.areValidProducts(boundary)) {
 			throw new InvalidDataException("Invalid values for the products.");
 		}
 		boundary.setBidId(null);
@@ -55,10 +59,15 @@ public class ExchangeServiceImplementation implements ExchangeService {
 
 		ProductBoundary oldProduct = productConsumer.getProductFromCatalog(boundary.getOldProduct().getId());
 		ProductBoundary newProduct = productConsumer.getProductFromCatalog(boundary.getNewProduct().getId());
-		ExchangeBoundary rv = this.converter.toBoundary(this.exchangeDAL.save(this.converter.fromBoundary(boundary, null)));
+
+		CouponBoundary coupon = this.couponConsumer.getCoupon(boundary.getExtra().getCoupon().getCouponId());
+
+		ExchangeBoundary rv = this.converter
+				.toBoundary(this.exchangeDAL.save(this.converter.fromBoundary(boundary, null)));
 
 		rv.setNewProduct(newProduct);
 		rv.setOldProduct(oldProduct);
+		rv.getExtra().setCoupon(coupon);
 
 		return rv;
 	}
@@ -86,20 +95,20 @@ public class ExchangeServiceImplementation implements ExchangeService {
 
 	private ExchangeBoundary[] searchByUser(String value, int page, int size) {
 		return this.exchangeDAL.findAllByUserEmail(value, PageRequest.of(page, size)).stream()
-				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).collect(Collectors.toList())
-				.toArray(new ExchangeBoundary[0]);
+				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).map(couponConsumer::setCoupon)
+				.collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	private ExchangeBoundary[] searchByOldProductId(String value, int page, int size) {
 		return this.exchangeDAL.findAllByOldProductId(value, PageRequest.of(page, size)).stream()
-				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).collect(Collectors.toList())
-				.toArray(new ExchangeBoundary[0]);
+				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).map(couponConsumer::setCoupon)
+				.collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	private ExchangeBoundary[] searchByNewProductId(String value, int page, int size) {
 		return this.exchangeDAL.findAllByNewProductId(value, PageRequest.of(page, size)).stream()
-				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).collect(Collectors.toList())
-				.toArray(new ExchangeBoundary[0]);
+				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).map(couponConsumer::setCoupon)
+				.collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	private ExchangeBoundary[] searchByExtraMoney(String minValue, String maxValue, int page, int size) {
@@ -112,8 +121,8 @@ public class ExchangeServiceImplementation implements ExchangeService {
 		}
 		return this.exchangeDAL
 				.findAllByExtra_MoneyBetween(minValueAsDouble, maxValueAsDouble, PageRequest.of(page, size)).stream()
-				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).collect(Collectors.toList())
-				.toArray(new ExchangeBoundary[0]);
+				.map(this.converter::toBoundary).map(this.productConsumer::setProducts).map(couponConsumer::setCoupon)
+				.collect(Collectors.toList()).toArray(new ExchangeBoundary[0]);
 	}
 
 	@Override
@@ -121,6 +130,7 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	public void update(ExchangeBoundary boundary) {
 		checkEmailIfItExists(boundary.getUserEmail());
 		checkProductsIfTheyExist(boundary);
+		checkCouponValidation(boundary);
 		ExchangeEntity existExchangeEntity = this.exchangeDAL.findById(boundary.getBidId())
 				.orElseThrow(() -> new BidNotFoundException("A bid with id: " + boundary.getBidId() + " not found"));
 		this.exchangeDAL.save(this.converter.fromBoundary(boundary, existExchangeEntity));
@@ -131,24 +141,32 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	public void removeAll() {
 		this.exchangeDAL.deleteAll();
 	}
-	
+
 	private void checkProductsIfTheyExist(ExchangeBoundary boundary) {
-		if(boundary.getOldProduct() != null) {
-			if(inputValidator.isNullOrEmpty(boundary.getOldProduct().getId())){
+		if (boundary.getOldProduct() != null) {
+			if (inputValidator.isNullOrEmpty(boundary.getOldProduct().getId())) {
 				throw new InvalidDataException("Invalid id for the product");
 			}
 		}
-		if(boundary.getNewProduct() != null) {
-			if(inputValidator.isNullOrEmpty(boundary.getNewProduct().getId())) {
+		if (boundary.getNewProduct() != null) {
+			if (inputValidator.isNullOrEmpty(boundary.getNewProduct().getId())) {
 				throw new InvalidDataException("Invalid id for the product");
 			}
 		}
 	}
-	
+
 	private void checkEmailIfItExists(String email) {
-		if(email != null) {
-			if(!inputValidator.IsValidEmail(email)) {
+		if (email != null) {
+			if (!inputValidator.IsValidEmail(email)) {
 				throw new InvalidDataException("Email address isn't valid");
+			}
+		}
+	}
+	
+	private void checkCouponValidation(ExchangeBoundary boundary) {
+		if (boundary.getExtra().getCoupon() != null) {
+			if (!inputValidator.isNullOrEmpty(boundary.getExtra().getCoupon().getCouponId())) {
+				this.couponConsumer.getCoupon(boundary.getExtra().getCoupon().getCouponId());
 			}
 		}
 	}

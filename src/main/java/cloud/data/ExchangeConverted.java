@@ -1,7 +1,8 @@
 package cloud.data;      
 
-import org.springframework.stereotype.Component;   
+import org.springframework.stereotype.Component;
 
+import cloud.boundaries.CouponBoundary;
 import cloud.boundaries.ExchangeBoundary;  
 import cloud.boundaries.ExtraBoundary;
 import cloud.boundaries.ProductBoundary;
@@ -34,7 +35,9 @@ public class ExchangeConverted {
 
 	private @NonNull ExtraBoundary toBoundary(@NonNull ExtraEntity entity) {
 		ExtraBoundary rv = new ExtraBoundary();
+		CouponBoundary coupon = new CouponBoundary();
 		rv.setMoney(entity.getMoney()); 
+		rv.setCoupon(coupon);
 		rv.setMoreInfo(entity.getMoreInfo()); 
 		return rv;  
 	}   
@@ -67,6 +70,9 @@ public class ExchangeConverted {
 	private @NonNull ExtraEntity fromBoundary(@NonNull ExtraBoundary boundary) {
 		ExtraEntity rv = new ExtraEntity();
 		rv.setMoney(boundary.getMoney());
+		if(boundary.getCoupon() != null && boundary.getCoupon().getCouponId() != null) {
+			rv.setCoupon(boundary.getCoupon().getCouponId());
+		}
 		if(boundary.getMoreInfo() != null) {
 			rv.setMoreInfo(boundary.getMoreInfo());
 		}

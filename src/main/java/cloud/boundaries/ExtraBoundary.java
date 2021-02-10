@@ -15,5 +15,6 @@ import lombok.ToString;
 @ToString
 public class ExtraBoundary {
 	private double money;
+	private CouponBoundary coupon;
 	private Map<String, String> moreInfo;
 }
