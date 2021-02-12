@@ -52,7 +52,7 @@ public class CouponConsumerImple implements CouponConsumer {
 			return restTemplate.getForEntity(fullURL+"/" + couponId, CouponBoundary.class).getBody();
 		}
 		catch (Exception e) {
-			throw new CouponNotFoundException("Product " + couponId + " not found");
+			throw new CouponNotFoundException("Coupon " + couponId + " not found");
 		}
 	}
 

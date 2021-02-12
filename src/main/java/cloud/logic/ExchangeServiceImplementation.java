@@ -48,6 +48,8 @@ public class ExchangeServiceImplementation implements ExchangeService {
 	@Override
 	@Transactional
 	public ExchangeBoundary create(ExchangeBoundary boundary) {
+		CouponBoundary coupon = new CouponBoundary();
+		
 		if (!inputValidator.IsValidEmail(boundary.getUserEmail())) {
 			throw new InvalidDataException("Email address isn't valid");
 		}
@@ -59,15 +61,17 @@ public class ExchangeServiceImplementation implements ExchangeService {
 
 		ProductBoundary oldProduct = productConsumer.getProductFromCatalog(boundary.getOldProduct().getId());
 		ProductBoundary newProduct = productConsumer.getProductFromCatalog(boundary.getNewProduct().getId());
-
-		CouponBoundary coupon = this.couponConsumer.getCoupon(boundary.getExtra().getCoupon().getCouponId());
+		
+		if(boundary.getExtra() != null)
+			coupon = this.couponConsumer.getCoupon(boundary.getExtra().getCoupon().getCouponId());
 
 		ExchangeBoundary rv = this.converter
 				.toBoundary(this.exchangeDAL.save(this.converter.fromBoundary(boundary, null)));
 
 		rv.setNewProduct(newProduct);
 		rv.setOldProduct(oldProduct);
-		rv.getExtra().setCoupon(coupon);
+		if(boundary.getExtra() != null)
+			rv.getExtra().setCoupon(coupon);
 
 		return rv;
 	}
