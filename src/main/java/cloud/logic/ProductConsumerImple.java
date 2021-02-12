@@ -20,9 +20,9 @@ import lombok.Setter;
 public class ProductConsumerImple implements ProductConsumer{
 	private RestTemplate restTemplate;
 
-	@Value( "${producer.url}" )
+	@Value( "${product.url}" )
 	private String url;
-	@Value( "${producer.port}" )
+	@Value( "${product.port}" )
 	private int port;
 	private String fullURL;
 

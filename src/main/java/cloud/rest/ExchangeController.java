@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cloud.boundaries.ExchangeBoundary;
 import cloud.data.exceptions.BidNotFoundException;
+import cloud.data.exceptions.CouponNotFoundException;
+import cloud.data.exceptions.InvalidDataException;
 import cloud.data.exceptions.ProductNotFoundException;
 import cloud.logic.ExchangeService;
 import lombok.AllArgsConstructor;
@@ -81,7 +83,7 @@ public class ExchangeController {
 	public Map<String, String> handleException(ProductNotFoundException e) {
 		String error = e.getMessage();
 		if (error == null) {
-			error = "Not found";
+			error = "Product Not found";
 		}
 		return Collections.singletonMap("error", error);
 	}
@@ -91,7 +93,27 @@ public class ExchangeController {
 	public Map<String, String> handleException(BidNotFoundException e) {
 		String error = e.getMessage();
 		if (error == null) {
-			error = "Not found";
+			error = "Bid Not found";
+		}
+		return Collections.singletonMap("error", error);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(code = HttpStatus.NOT_FOUND)
+	public Map<String, String> handleException(CouponNotFoundException e) {
+		String error = e.getMessage();
+		if (error == null) {
+			error = "Coupon not found";
+		}
+		return Collections.singletonMap("error", error);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(code = HttpStatus.NOT_FOUND)
+	public Map<String, String> handleException(InvalidDataException e) {
+		String error = e.getMessage();
+		if (error == null) {
+			error = "InValid data";
 		}
 		return Collections.singletonMap("error", error);
 	}
